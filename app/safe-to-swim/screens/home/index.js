@@ -66,6 +66,7 @@ class HomeScreen extends React.Component {
         super(props);
 
         this.state = {
+            isPicking: false,
             image: null,
             permissionsGranted: false,
             permissionsError: null
@@ -110,7 +111,7 @@ class HomeScreen extends React.Component {
     pickImage = async (): Promise => {
         const pickerResult = await ImagePicker.launchImageLibraryAsync({
             base64: true,
-            allowsEditing: true,
+            allowsEditing: false,
             aspect: [4, 3]
         });
 
@@ -118,12 +119,16 @@ class HomeScreen extends React.Component {
     };
 
     takePhoto = async () => {
-        const pickerResult = await ImagePicker.launchCameraAsync({
-            base64: true,
-            allowsEditing: true,
-            aspect: [4, 3]
-        });
-        return this.setState({image: pickerResult});
+
+        const permissions = await Permissions.askAsync(Permissions.CAMERA);
+        if (permissions) {
+            this.setState({isPicking: true})
+            const pickerResult = await ImagePicker.launchCameraAsync({
+                base64: true,
+                allowsEditing: false
+            });
+            return this.setState({isPicking: false, image: typeof pickerResult === 'function' ? pickerResult() : pickerResult});
+        }
     };
 
     maybeRenderImage = (image) => (
@@ -173,11 +178,26 @@ class HomeScreen extends React.Component {
 
 
     render() {
-        const {image} = this.state;
+        const {image, isPicking} = this.state;
         const {error, prediction, isUploading} = this.props;
 
         const getContent = () => {
             switch (true) {
+                case isPicking:
+                    return (
+                        <View
+                            style={[
+                                StyleSheet.absoluteFill,
+                                {
+                                    backgroundColor: '#FFF',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }
+                            ]}>
+                            <ActivityIndicator color='#333' animating={true} size='large'/>
+                            <Text style={{fontSize: 30, marginTop: 20}}>Processing</Text>
+                        </View>
+                    );
                 case isUploading:
                     return (
                         <View
@@ -212,7 +232,18 @@ class HomeScreen extends React.Component {
                     );
                 case Boolean(error) :
                     return (<View style={styles.container}>
-                        <Text>{JSON.stringify(error)}</Text>
+                        <View>
+                            <Text>Sorry, we encountered the following error:</Text>
+                            <Text>{JSON.stringify(error)}</Text>
+                        </View>
+                        <View style={{height: 50}}>
+                            <View style={styles.toolbar}>
+                                <TouchableOpacity style={{height: 50, width: '100%', alignItems:'center'}}
+                                    onPress={() => this.setState({image: null}, this.props.actions.clearPrediction)}>
+                                    <Text style={styles.toolbarText}>Continue</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
                     </View>);
                 case Boolean(image):
                     return this.maybeRenderImage(image, error);
