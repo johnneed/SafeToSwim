@@ -109,20 +109,21 @@ class HomeScreen extends React.Component {
 
 
     pickImage = async (): Promise => {
+        this.setState({isPicking: true});
         const pickerResult = await ImagePicker.launchImageLibraryAsync({
             base64: true,
             allowsEditing: false,
             aspect: [4, 3]
         });
 
-        return this.setState({image: pickerResult});
+        return this.setState({isPicking: false, image: pickerResult});
     };
 
     takePhoto = async () => {
 
         const permissions = await Permissions.askAsync(Permissions.CAMERA);
         if (permissions) {
-            this.setState({isPicking: true})
+            this.setState({isPicking: true});
             const pickerResult = await ImagePicker.launchCameraAsync({
                 base64: true,
                 allowsEditing: false
@@ -131,7 +132,7 @@ class HomeScreen extends React.Component {
         }
     };
 
-    maybeRenderImage = (image) => (
+    renderImage = (image) => (
         <View style={styles.container}>
             <View
                 style={{
@@ -246,7 +247,7 @@ class HomeScreen extends React.Component {
                         </View>
                     </View>);
                 case Boolean(image):
-                    return this.maybeRenderImage(image, error);
+                    return this.renderImage(image, error);
                 default:
                     return (
                         <View style={styles.container}>

@@ -6,28 +6,12 @@ const url = 'https://safe-to-swim.herokuapp.com/predict'; // Heroku
 // const url = 'http://10.0.0.4:5000/predict'; // John's Mac
 // const url = 'http://10.0.0.9:5000/predict'; // John's Ubuntu
 
-// function postData(url, data) {
-//     // Default options are marked with *
-//     return fetch(url, {
-//         body: JSON.stringify(data), // must match 'Content-Type' header
-//         cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-//         credentials: 'same-origin', // include, same-origin, *omit
-//         headers: {
-//             'user-agent': 'Mozilla/4.0 MDN Example',
-//             'content-type': 'multipart/form-data'
-//         },
-//         method: 'POST', // *GET, POST, PUT, DELETE, etc.
-//         mode: 'cors', // no-cors, cors, *same-origin
-//         redirect: 'follow', // manual, *follow, error
-//         referrer: 'no-referrer' // *client, no-referrer
-//     })
-//         .then(response => response.json()); // parses response to JSON
-// }
 
 
 export async function upload(image: Object) {
     const options = {
         headers: {
+            Accept: 'application/json',
             'Content-Type': 'multipart/form-data'
         },
         method: 'POST',
@@ -35,38 +19,18 @@ export async function upload(image: Object) {
     };
 
     options.body.append('image', image);
+    try {
+        const rawResponse = await fetch(url, options);
+        return rawResponse.json();
+    }
+    catch(error){
+        console.log(JSON.stringify(error));
+        return false;
+    }
 
-    const rawResponse = await fetch(url, options);
-    return await rawResponse.json();
 }
 
-//
-// export function uploadPhoto(photo: any) {
-//     const url = 'https://safe-to-swim.herokuapp.com/predict';
-//     const data = new FormData();
-//     // data.append('photo', {
-//     //     uri: photo.uri,
-//     //     type: 'image/jpeg', // or photo.type
-//     //     name: 'testPhotoName'
-//     // });
-//     upload(url, {
-//         file: {
-//             uri: photo.uri,
-//             type: 'image/jpeg',
-//             name: 'testPhoto'
-//         }
-//     })
-//         .then(res => console.log('photo uploaded!'))
-//         .catch(error => {
-//             console.error(error);
-//         });
-//     // fetch(url, {
-//     //     method: 'post',
-//     //     body: data
-//     // }).then(res => {
-//     //     console.log(res)
-//     // }).catch(error => console.error(error));
-// }
+
 
 export async function getUserStats(dispatch: any => any) {
     try {

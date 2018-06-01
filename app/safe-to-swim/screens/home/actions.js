@@ -20,6 +20,8 @@ export function setUserStats(userStats: Object): any => any {
     return (dispatch: any) => {
         dataLayer.setUserStats(userStats)
             .then( data => dispatch({type: types.SET_USER_STATS_SUCCESS, data}))
-            .catch(error => dispatch({type: types.SET_USER_STATS_FAIL, error}));
+            .catch(
+                error => dispatch({type: types.SET_USER_STATS_FAIL, error})
+            );
     };
 }
